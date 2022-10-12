@@ -43,11 +43,9 @@ const Scheduler = ({setMessage, setType}) => {
   }
 
   const handleSubmit = async (e) => {
-    console.log(selectedParticipants)
     e.preventDefault();
     const newStartTime = new Date(`${date} ${startTime} UTC` ).toISOString();
     const newEndTime = new Date(`${date} ${endTime} UTC `).toISOString();
-    console.log(newStartTime, newEndTime);
     if(selectedParticipants.length < 2){
       setMessage("Please select atleast two participants")
       return

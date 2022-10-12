@@ -101,11 +101,9 @@ router.post('/create', async (req, res, next) => {
     const newInterview = new Interview({ name, startTime, endTime, participants, description });
     await newInterview.save();
     await User.updateMany({ _id: { $in: participants } }, { $push: { interviews: newInterview._id } });
-    console.log(newInterview)
     return res.json(newInterview);
 
   } catch (error) {
-    console.log(error);
     next(error);
   }
 })
@@ -129,7 +127,6 @@ router.delete('/:id', async (req, res, next) => {
     await Interview.deleteOne({ _id: id });
     await User.updateMany({ _id: { $in: participants } }, { $pop: { interviews: newInterview._id } })
   } catch (error) {
-    console.log(error);
     next(error);
   }
 })

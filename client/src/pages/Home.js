@@ -16,7 +16,7 @@ const Home = ({setType, setMessage}) => {
   const getStandardTime = (date) => {
     const dateObj = new Date(date);
     const ISOString = dateObj.toISOString();
-    console.log(date)
+    return ISOString.slice(11, 16);
   }
 
   const onEdit = (oldInterview) => {

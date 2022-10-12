@@ -18,7 +18,6 @@ const List = ({ participants, selectedParticipants, setSelectedParticipants, dat
   const checkForTimeConflicts = async (id) => {
     const interviewsToday = await getAllInterviewsForAUserOnThisDay({id, date}).then(data => data.interviews);
     if(interviewsToday.length == 0) return false;
-    console.log(interviewsToday);
     const ISOStartTime = new Date(startTime);
     const ISOEndTime = new Date(endTime);
     const conflictingInterviews = interviewsToday.filter((interview) => interview.startTime > ISOEndTime || interview.endTime < ISOStartTime);
@@ -33,7 +32,6 @@ const List = ({ participants, selectedParticipants, setSelectedParticipants, dat
   const handleAddParticipant = async (e) => {
     if (e.target.checked) {
       const isConflicting = await checkForTimeConflicts(e.target.value);
-      console.log(isConflicting);
       if(!isConflicting) {
         setSelectedParticipants(prev => [...prev, e.target.value]);
       }
