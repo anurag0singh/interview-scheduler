@@ -19,6 +19,11 @@ export const deleteInterview = async (id) => {
   return await client.delete(`/${id}`);
 }
 
-export const getAllInterviewsForAUserOnThisDay = async ({id, date}) => {
-  return await client.get(`/users/${id}/${date}`).then(res => res.data);
+export const getAllInterviewsForAUserOnThisDay = async ({id, date, startTime, endTime}) => {
+  const startTimeObj = new Date(date + " " + startTime);
+  const endTimeObj = new Date(date + " " + endTime);
+  const start = startTimeObj.toISOString();
+  const end = endTimeObj.toISOString();
+  console.log(id, date, startTime, endTime);
+  return await client.post('/conflicts', {id, start, end}).then(res => res.data);
 }

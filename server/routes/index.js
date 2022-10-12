@@ -7,7 +7,7 @@ const User = require('../models/User.js');
 
 const getISODatesForFromAndTo = (date) => {
   const day = 60 * 60 * 24 * 1000;
-  const startDate = new Date(date);
+  const startDate = new Date(date + " " + "00:00");
   const endDate = new Date(startDate.getTime() + day);
   const from = startDate.toISOString();
   const to = endDate.toISOString();
@@ -43,14 +43,12 @@ router.post('/users', async (req, res, next) => {
 })
 
 // get all interviews schduled for the user on current day
-router.get('/users/:id/:date', async (req, res, next) => {
+router.post('/conflicts', async (req, res, next) => {
   try {
-    const id = req.params.id;
-    const date = req.params.date;
-    const { from, to } = getISODatesForFromAndTo(date);
+    const { id, start, end} = req.body;
     const interviews = await User.findOne({ _id: id }, {interviews: 1, _id: 0}).populate({
       path: 'interviews',
-      match: { startTime: {$gte: from, $lt: to}}
+      match: { startTime: {$gte: start, $lt: end}}
     });
     return res.json(interviews);
   } catch (error) {

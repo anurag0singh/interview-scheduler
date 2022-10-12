@@ -14,9 +14,10 @@ const Home = ({setType, setMessage}) => {
   const [interviewDetails, setInterviewDetails] = useState();
 
   const getStandardTime = (date) => {
-    const dateObj = new Date(date);
-    const ISOString = dateObj.toISOString();
-    return ISOString.slice(11, 16);
+    const timeObj = new Date(date);
+    const hours = timeObj.getHours();
+    const minutes = timeObj.getMinutes();
+    return ((hours % 12) < 10 ? "0" : "") + (hours % 12) + ":" + (minutes < 10 ? "0" : "") + minutes + " " + (hours >= 12 ? 'PM' : 'AM');
   }
 
   const onEdit = (oldInterview) => {
