@@ -18,9 +18,18 @@ const List = ({ participants, selectedParticipants, setSelectedParticipants, dat
   const checkForTimeConflicts = async (id) => {
     const interviewsToday = await getAllInterviewsForAUserOnThisDay({id, date}).then(data => data.interviews);
     if(interviewsToday.length == 0) return false;
-    const ISOStartTime = new Date(startTime);
-    const ISOEndTime = new Date(endTime);
-    const conflictingInterviews = interviewsToday.filter((interview) => interview.startTime > ISOEndTime || interview.endTime < ISOStartTime);
+    const start = new Date(date + " " + startTime);
+    const end = new Date(date + " " + endTime);
+    const conflictingInterviews = interviewsToday.filter((interview) => {
+      const interviewStartTime = new Date(interview.startTime);
+      const interviewEndTime = new Date(interview.endTime);
+      if(interviewStartTime > end || interviewEndTime < start) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    });
     if(conflictingInterviews.length > 0) {
       return true;
     }
@@ -36,7 +45,7 @@ const List = ({ participants, selectedParticipants, setSelectedParticipants, dat
         setSelectedParticipants(prev => [...prev, e.target.value]);
       }
       else{
-        setMessage(`Time is conflicting`)
+        setMessage(`Time is conflicting for the selected user`)
       }
     }
     else {

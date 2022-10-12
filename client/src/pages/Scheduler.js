@@ -107,7 +107,7 @@ const Scheduler = ({setMessage, setType}) => {
                   <Form.Control type="time" name="startTime" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
                 </Col>
                 <Col>
-                  <Form.Label>End Time: </Form.Label>
+                  <Form.Label>End Time: {endTime}</Form.Label>
                   <Form.Control type="time" name="endTime" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
                 </Col>
 

@@ -5,12 +5,6 @@ import { Col, Row, Modal, Container, Card } from 'react-bootstrap';
 const InterviewDetails = ({ showModal, interviewDetails, setShowModal }) => {
   const startTime = new Date(interviewDetails?.startTime);
   const endTime = new Date(interviewDetails?.endTime);
-  
-  const getStandardTime = (date) => {
-    const dateObj = new Date(date);
-    const ISOString = dateObj.toISOString();
-    return ISOString.slice(11, 16);
-  }
 
   return (
     <Modal show={showModal} onHide={() => setShowModal(false)} size='xl' className="modal-dialog-centered" >
@@ -26,7 +20,7 @@ const InterviewDetails = ({ showModal, interviewDetails, setShowModal }) => {
             </Col>
             <Col md={4}>
               <h5>{startTime.toDateString()}</h5>
-              {/* <h5>{getStandardTime(interviewDetails?.startTime) - getStandardTime(interviewDetails?.endTime)}</h5> */}
+              <h5>{startTime.getHours()}:{startTime.getMinutes()} - {endTime.getHours()}:{endTime.getMinutes()}</h5>
             </Col>
           </Row>
           <Row className = 'my-2'>
