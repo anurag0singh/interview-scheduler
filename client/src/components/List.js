@@ -1,5 +1,4 @@
 import { Container, Form, Table } from "react-bootstrap";
-import { getAllInterviewsForAUserOnThisDay } from "../requests/methods";
 
 const List = ({ participants, selectedParticipants, setSelectedParticipants, date, startTime, endTime, setMessage }) => {
 
@@ -13,28 +12,14 @@ const List = ({ participants, selectedParticipants, setSelectedParticipants, dat
     const element = participants[idx];
     if (selectedParticipantsSet.has(element._id)) defaultCheckValues[idx] = true;
     else defaultCheckValues[idx] = false;
-  } 
-
-  const checkForTimeConflicts = async (id) => {
-    const interviewsToday = await getAllInterviewsForAUserOnThisDay({id, date, startTime, endTime}).then(data => data.interviews);
-    console.log(interviewsToday)
-    if(interviewsToday.length == 0) return false;
-    else return true;
   }
 
   const handleAddParticipant = async (e) => {
     if (e.target.checked) {
-      const isConflicting = await checkForTimeConflicts(e.target.value);
-      console.log(isConflicting);
-      if(!isConflicting) {
-        setSelectedParticipants(prev => [...prev, e.target.value]);
-      }
-      else{
-        setMessage(`Time is conflicting for the selected user`)
-      }
+      setSelectedParticipants([...selectedParticipants, e.target.value]);
     }
     else {
-      setSelectedParticipants(prev => prev.filter(entry => entry != e.target.value._id));
+      setSelectedParticipants(selectedParticipants.filter(entry => entry._id != e.target.value));
     }
   }
   return (

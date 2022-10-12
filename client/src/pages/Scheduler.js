@@ -3,9 +3,9 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from 'react-router-dom'
 import List from "../components/List";
-import { getAllParticipants, scheduleInterview, updateInterview } from "../requests/methods";
+import { getAllInterviewsExceptOne, getAllInterviewsForAUserOnThisDay, getAllParticipants, scheduleInterview, updateInterview } from "../requests/methods";
 
-const Scheduler = ({setMessage, setType}) => {
+const Scheduler = ({ setMessage, setType }) => {
   const navigate = useNavigate();
   const { date, oldInterview } = useLocation().state;
   const [participants, setParticipants] = useState([]);
@@ -13,13 +13,15 @@ const Scheduler = ({setMessage, setType}) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [description, setDescription] = useState("");
-  const [name, setName] = useState();
+  const [name, setName] = useState("");
 
-  useEffect(() => {
-    if(startTime && endTime && startTime > endTime){
-      setMessage("End time cannot be lower than start time")
-    }
-  }, [startTime, endTime])
+  const getTimeFromISO = (time) => {
+    const dt = new Date(date + " " + time);
+    const timeObj = new Date(dt.toISOString());
+    const hours = (timeObj.getHours() < 10 ? "0" : "") + timeObj.getHours();
+    const minutes = (timeObj.getMinutes() < 10 ? "0" : "") + timeObj.getMinutes();
+    return hours + ':' + minutes;
+  }
 
   useEffect(() => {
     if (oldInterview) {
@@ -27,8 +29,8 @@ const Scheduler = ({setMessage, setType}) => {
       const endTimeObj = new Date(oldInterview.endTime);
       const oldStartTime = (startTimeObj.getHours() >= 10 ? "" : "0") + startTimeObj.getHours() + ":" + startTimeObj.getMinutes();
       const oldEndTime = (endTimeObj.getHours() >= 10 ? "" : "0") + endTimeObj.getHours() + ":" + endTimeObj.getMinutes();
-      setStartTime(oldStartTime);
-      setEndTime(oldEndTime);
+      setStartTime(getTimeFromISO(oldStartTime));
+      setEndTime(getTimeFromISO(oldEndTime));
       setName(oldInterview.name);
       setDescription(oldInterview.description);
       setSelectedParticipants(oldInterview.participants);
@@ -36,22 +38,46 @@ const Scheduler = ({setMessage, setType}) => {
     fetchPageData();
   }, [])
 
-
   const fetchPageData = async () => {
     const participantsList = await getAllParticipants();
     setParticipants(participantsList);
   }
 
+  const checkForTimeConflicts = async (ids) => {
+    const interviewsToday = await getAllInterviewsForAUserOnThisDay({ ids, date, startTime, endTime }).then(data => data.interviews);
+    if (interviewsToday.length == 0) return false;
+    else return true;
+  }
+
+  const checkConflictsExceptOneMeeting = async (ids, id) => {
+    const interviewsToday = await getAllInterviewsExceptOne({ id, ids, date, startTime, endTime }).then(data => data.interviews);
+    if (interviewsToday.length == 0) {
+      return false;
+    }
+    else return true;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newStartTime = new Date(`${date} ${startTime}` ).toISOString();
+    const newStartTime = new Date(`${date} ${startTime}`).toISOString();
     const newEndTime = new Date(`${date} ${endTime}`).toISOString();
-    console.log(newStartTime, startTime)
-    if(selectedParticipants.length < 2){
-      setMessage("Please select atleast two participants")
-      return
+    if (selectedParticipants.length < 2) {
+      setMessage("Please select atleast two participants");
+      return;
+    }
+    if(name.length == 0) {
+      setMessage("Name field can't be left empty");
+      return;
     }
     if (!oldInterview) {
+      if(await checkForTimeConflicts(selectedParticipants)) {
+        setMessage("Some participants are unavailable at this time slot");
+        return;
+      }
+      if (startTime && endTime && startTime > endTime) {
+        setMessage("End time cannot be lower than start time");
+        return;
+      }
       await scheduleInterview({
         participants: selectedParticipants,
         startTime: newStartTime,
@@ -59,10 +85,14 @@ const Scheduler = ({setMessage, setType}) => {
         name,
         description
       });
-      setMessage('Interview Scheduled Successfully')
-      setType('success')
+      setMessage('Interview Scheduled Successfully');
+      setType('success');
     }
     else {
+      if(await checkConflictsExceptOneMeeting(selectedParticipants, oldInterview._id)) {
+        setMessage("Some participants are unavailable at this time slot");
+        return;
+      }
       await updateInterview({
         id: oldInterview._id,
         formData: {
@@ -108,7 +138,7 @@ const Scheduler = ({setMessage, setType}) => {
                   <Form.Control type="time" name="startTime" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
                 </Col>
                 <Col>
-                  <Form.Label>End Time: {endTime}</Form.Label>
+                  <Form.Label>End Time: </Form.Label>
                   <Form.Control type="time" name="endTime" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
                 </Col>
 
@@ -120,7 +150,7 @@ const Scheduler = ({setMessage, setType}) => {
             </Col>
           </Row>
           <Row>
-            <List participants={participants} selectedParticipants={selectedParticipants} setSelectedParticipants={setSelectedParticipants} date={date} startTime={startTime} endTime={endTime} setMessage = {setMessage} />
+            <List participants={participants} selectedParticipants={selectedParticipants} setSelectedParticipants={setSelectedParticipants} date={date} startTime={startTime} endTime={endTime} setMessage={setMessage} />
           </Row>
         </Form>
       </Container>

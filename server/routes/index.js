@@ -1,4 +1,5 @@
-const express = require('express')
+const express = require('express');
+const { default: mongoose } = require('mongoose');
 const router = express.Router()
 
 const Interview = require("../models/Interview.js");
@@ -45,10 +46,28 @@ router.post('/users', async (req, res, next) => {
 // get all interviews schduled for the user on current day
 router.post('/conflicts', async (req, res, next) => {
   try {
-    const { id, start, end} = req.body;
-    const interviews = await User.findOne({ _id: id }, {interviews: 1, _id: 0}).populate({
+    const { ids, start, end} = req.body;
+    const interviews = await User.findOne({ _id: { $in: ids} }, {interviews: 1, _id: 0}).populate({
       path: 'interviews',
       match: { startTime: {$gte: start, $lt: end}}
+    });
+    return res.json(interviews);
+  } catch (error) {
+    next(error);
+  }
+})
+
+// get all interviews schduled for the user except one meeting
+router.post('/conflicts/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const { ids, from, to} = req.body;
+    const interviews = await User.findOne({ _id: { $in: ids} }, {interviews: 1, _id: 0}).populate({
+      path: 'interviews',
+      match: { $and: [
+        { startTime: {$gte: from, $lt: to}},
+        {_id: {$ne: id}}
+      ]}
     });
     return res.json(interviews);
   } catch (error) {
@@ -111,7 +130,8 @@ router.put('/:id', async (req, res, next) => {
   try {
     const id = req.params.id;
     const { name, startTime, endTime, participants, description } = req.body.formData;
-    await Interview.updateOne({ _id: id }, { name, startTime, endTime, participants, description })
+    const resp = await Interview.updateOne({ _id: id }, { name, startTime, endTime, participants, description })
+    return res.json(resp);
   } catch (error) {
     next(error)
   }
@@ -121,9 +141,10 @@ router.put('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     const id = req.params.id;
-    const participants = await Interview.find({ _id: id }, { "participants": 1, "_id": 0 });
-    await Interview.deleteOne({ _id: id });
-    await User.updateMany({ _id: { $in: participants } }, { $pop: { interviews: newInterview._id } })
+    const participants = await Interview.find({ _id: id }, { participants: 1, _id: 0 }).then(data => data.participants);
+    const resp = await Interview.deleteOne({ _id: id });
+    await User.updateMany({ _id: { $in: participants } }, { $pull: { interviews: id } })
+    return res.status(200).send(resp);
   } catch (error) {
     next(error);
   }

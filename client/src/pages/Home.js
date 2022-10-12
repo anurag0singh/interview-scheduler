@@ -33,9 +33,9 @@ const Home = ({setType, setMessage}) => {
 
   const handleDelete = async (id) => {
     await deleteInterview(id);
-    setMessage("Deleted interview")
-    setType("success")
-    setInterviews(interviews.filter(interview => interview._id !== id))
+    setMessage("Deleted interview");
+    setType("success");
+    setInterviews(interviews.filter(interview => interview._id !== id));
   }
 
   return (
