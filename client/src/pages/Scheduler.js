@@ -44,9 +44,13 @@ const Scheduler = ({ setMessage, setType }) => {
   }
 
   const checkForTimeConflicts = async (ids) => {
-    const interviewsToday = await getAllInterviewsForAUserOnThisDay({ ids, date, startTime, endTime }).then(data => data.interviews);
-    if (interviewsToday.length == 0) return false;
-    else return true;
+    const interviewsToday = await getAllInterviewsForAUserOnThisDay({ ids, date, startTime, endTime });
+    for(let idx = 0; idx < interviewsToday.length; idx++) {
+      if(interviewsToday[idx].interviews.length > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   const checkConflictsExceptOneMeeting = async (ids, id) => {
@@ -70,7 +74,8 @@ const Scheduler = ({ setMessage, setType }) => {
       return;
     }
     if (!oldInterview) {
-      if(await checkForTimeConflicts(selectedParticipants)) {
+      const conflicts = await checkForTimeConflicts(selectedParticipants);
+      if(conflicts) {
         setMessage("Some participants are unavailable at this time slot");
         return;
       }

@@ -3,7 +3,15 @@ const router = express.Router()
 
 const Interview = require("../models/Interview.js");
 const User = require('../models/User.js');
-const { getISODatesForFromAndTo } = require('../utilities/index.js');
+
+const getISODatesForFromAndTo = (date) => {
+  const day = 60 * 60 * 24 * 1000;
+  const startDate = new Date(date + " " + "00:00");
+  const endDate = new Date(startDate.getTime() + day);
+  const from = startDate.toISOString();
+  const to = endDate.toISOString();
+  return { from, to };
+}
 
 /*
     Routes for users
@@ -55,10 +63,13 @@ router.delete('/deleteUsers', async (req, res, next) => {
 // get all interviews schduled for the user on current day and time slot
 router.post('/conflicts', async (req, res, next) => {
   try {
-    const { ids, start, end } = req.body;
-    const interviews = await User.findOne({ _id: { $in: ids } }, { interviews: 1, _id: 0 }).populate({
+    const { ids, from, to } = req.body;
+    const interviews = await User.find({ _id: { $in: ids } }, { interviews: 1, _id: 0 }).populate({
       path: 'interviews',
-      match: { startTime: { $gte: start, $lt: end } }
+      match: { $or:[
+        {startTime: { $gte: from, $lte: to }},
+        {endTime: { $gte: from, $lte: to}}
+      ] }
     });
     return res.json(interviews);
   } catch (error) {
