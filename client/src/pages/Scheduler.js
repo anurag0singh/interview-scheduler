@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'
 import List from "../components/List";
 import { getAllInterviewsExceptOne, getAllInterviewsForAUserOnThisDay, getAllParticipants, scheduleInterview, updateInterview } from "../requests/methods";
 
-const Scheduler = ({ setMessage, setType }) => {
+const Scheduler = ({ setMessage }) => {
   const navigate = useNavigate();
   const { date, oldInterview } = useLocation().state;
   const [participants, setParticipants] = useState([]);
@@ -79,6 +79,10 @@ const Scheduler = ({ setMessage, setType }) => {
         setMessage("Some participants are unavailable at this time slot");
         return;
       }
+      if (!startTime || !endTime) {
+        setMessage("Please Select time details");
+        return;
+      }
       if (startTime && endTime && startTime > endTime) {
         setMessage("End time cannot be lower than start time");
         return;
@@ -91,7 +95,6 @@ const Scheduler = ({ setMessage, setType }) => {
         description
       });
       setMessage('Interview Scheduled Successfully');
-      setType('success');
     }
     else {
       if(await checkConflictsExceptOneMeeting(selectedParticipants, oldInterview._id)) {

@@ -6,7 +6,7 @@ import InterviewDetails from '../components/InterviewDetails';
 import { deleteInterview } from "../requests/methods";
 
 
-const Home = ({setType, setMessage}) => {
+const Home = ({setMessage}) => {
   const navigate = useNavigate();
 
   const [interviews, setInterviews] = useState([]);
@@ -34,7 +34,6 @@ const Home = ({setType, setMessage}) => {
   const handleDelete = async (id) => {
     await deleteInterview(id);
     setMessage("Deleted interview");
-    setType("success");
     setInterviews(interviews.filter(interview => interview._id !== id));
   }
 

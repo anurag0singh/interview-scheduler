@@ -8,16 +8,15 @@ import Scheduler from "./pages/Scheduler";
 
 function App() {
   const [message, setMessage] = useState('')
-  const [type, setType] = useState('')
   return (
     <Router>
       <div className="App">
         <Topbar />
-        {message && <Notification message = {message} type = {type} setShow = {setMessage}/>}
+        {message && <Notification message = {message} setShow = {setMessage}/>}
         <Routes>
-          <Route path="/" element={<Home setMessage = {setMessage} setType={setType} />} />
-          <Route path="/create" element={<Scheduler setMessage = {setMessage} setType={setType} />} />
-          <Route path="/edit" element={<Scheduler setMessage = {setMessage} setType={setType} />} />
+          <Route path="/" element={<Home setMessage = {setMessage}  />} />
+          <Route path="/create" element={<Scheduler setMessage = {setMessage}  />} />
+          <Route path="/edit" element={<Scheduler setMessage = {setMessage}  />} />
         </Routes>
       </div>
     </Router>

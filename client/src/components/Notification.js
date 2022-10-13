@@ -1,11 +1,13 @@
 import React from 'react'
-import { Alert } from "react-bootstrap";
+import { Toast, ToastContainer } from "react-bootstrap";
 
-const Notification = ({message, type, setShow}) => {
+const Notification = ({ message, setShow }) => {
   return (
-    <Alert variant={type || 'danger'} dismissible onClose={() => setShow(false)}>
-    {message}
-  </Alert>
+    <ToastContainer position='top-end' className='p-3'>
+      <Toast dismissible onClose={() => setShow(false)} show={message} delay={3000} autohide>
+        <Toast.Body>{message}</Toast.Body>
+      </Toast>
+    </ToastContainer>
   )
 }
 
