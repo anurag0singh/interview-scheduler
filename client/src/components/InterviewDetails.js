@@ -1,5 +1,6 @@
 import React from 'react'
 import { Col, Row, Modal, Container, Card } from 'react-bootstrap';
+import {getStandardTime} from "./ShowInterviews"
 
 
 const InterviewDetails = ({ showModal, interviewDetails, setShowModal }) => {
@@ -16,11 +17,11 @@ const InterviewDetails = ({ showModal, interviewDetails, setShowModal }) => {
           <Row>
             <Col md={8}>
               <h3>Description</h3>
-              {interviewDetails?.description}
+             <small className = "my-2">{interviewDetails?.description ? interviewDetails?.description : "No description provided"}</small>
             </Col>
             <Col md={4}>
-              <h5>{startTime.toDateString()}</h5>
-              <h5>{startTime.getHours()}:{startTime.getMinutes()} - {endTime.getHours()}:{endTime.getMinutes()}</h5>
+              <h4>{startTime.toDateString()}</h4>
+              <h6 className = "mt-2">{getStandardTime(interviewDetails?.startTime)} - {getStandardTime(interviewDetails?.endTime)}</h6>
             </Col>
           </Row>
           <Row className = 'my-2'>
