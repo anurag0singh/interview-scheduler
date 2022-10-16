@@ -1,3 +1,5 @@
 .interview-card:hover{
-    cursor : pointer
+    cursor : pointer;
+    box-shadow: 0 33px 61px -29px rgba(0, 0, 0, 0.26);
+    transition: all 0.3s ease-in;
 }

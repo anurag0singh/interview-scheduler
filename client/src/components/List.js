@@ -1,6 +1,6 @@
 import { Container, Form, Table } from "react-bootstrap";
 
-const List = ({ participants, selectedParticipants, setSelectedParticipants, date, startTime, endTime, setMessage }) => {
+const List = ({ participants, selectedParticipants, setSelectedParticipants }) => {
 
   let defaultCheckValues = new Array(participants.length);
 
@@ -19,9 +19,12 @@ const List = ({ participants, selectedParticipants, setSelectedParticipants, dat
       setSelectedParticipants([...selectedParticipants, e.target.value]);
     }
     else {
-      setSelectedParticipants(selectedParticipants.filter(entry => entry._id != e.target.value));
+      setSelectedParticipants(selectedParticipants.filter(entry => entry != e.target.value));
     }
   }
+
+  console.log(selectedParticipants);
+
   return (
     <Container className="my-3">
       <Table className="table table-hover" bordered>

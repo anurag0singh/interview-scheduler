@@ -3,15 +3,7 @@ const router = express.Router()
 
 const Interview = require("../models/Interview.js");
 const User = require('../models/User.js');
-
-const getISODatesForFromAndTo = (date) => {
-  const day = 60 * 60 * 24 * 1000;
-  const startDate = new Date(date + " " + "00:00");
-  const endDate = new Date(startDate.getTime() + day);
-  const from = startDate.toISOString();
-  const to = endDate.toISOString();
-  return { from, to };
-}
+const { getToAndFromISODate, getISODatesForADay, sendEmails } = require('../utilities/index.js');
 
 /*
     Routes for users
@@ -63,7 +55,8 @@ router.delete('/deleteUsers', async (req, res, next) => {
 // get all interviews schduled for the user on current day and time slot
 router.post('/conflicts', async (req, res, next) => {
   try {
-    const { ids, from, to } = req.body;
+    const { ids, startTime, endTime, date } = req.body;
+    const {from, to} = getToAndFromISODate(startTime, endTime, date);
     const interviews = await User.find({ _id: { $in: ids } }, { interviews: 1, _id: 0 }).populate({
       path: 'interviews',
       match: { $or:[
@@ -81,7 +74,8 @@ router.post('/conflicts', async (req, res, next) => {
 router.post('/conflicts/:id', async (req, res, next) => {
   try {
     const id = req.params.id;
-    const { ids, from, to } = req.body;
+    const { ids, startTime, endTime, date } = req.body;
+    const {from, to} = getToAndFromISODate(startTime, endTime, date);
     const interviews = await User.findOne({ _id: { $in: ids } }, { interviews: 1, _id: 0 }).populate({
       path: 'interviews',
       match: {
@@ -121,7 +115,7 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const { date } = req.body;
-    const { from, to } = getISODatesForFromAndTo(date);
+    const { from, to } = getISODatesForADay(date);
     const interviews = await Interview.find({ startTime: { $gt: from, $lt: to } }).populate('participants');
     return res.json(interviews);
   } catch (error) {
@@ -136,6 +130,16 @@ router.post('/create', async (req, res, next) => {
     const newInterview = new Interview({ name, startTime, endTime, participants, description });
     await newInterview.save();
     await User.updateMany({ _id: { $in: participants } }, { $push: { interviews: newInterview._id } });
+    const participantsInfo = await User.find({_id: {$in: participants}}, {email: 1, _id: 0});
+    const mailData = {
+      to: participantsInfo.map(info => info.email),
+      subject: "Your New Interview Has Been Scheduled",
+      startTime: Date(startTime).toString(),
+      endTime: Date(endTime).toString(),
+      name,
+      description
+    }
+    sendEmails(mailData);
     return res.json(newInterview);
 
   } catch (error) {

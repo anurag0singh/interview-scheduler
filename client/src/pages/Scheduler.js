@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'
 import List from "../components/List";
 import { getAllInterviewsExceptOne, getAllInterviewsForAUserOnThisDay, getAllParticipants, scheduleInterview, updateInterview } from "../requests/methods";
 
-const Scheduler = ({ setMessage }) => {
+const Scheduler = ({ setAlert }) => {
   const navigate = useNavigate();
   const { date, oldInterview } = useLocation().state;
   const [participants, setParticipants] = useState([]);
@@ -66,25 +66,40 @@ const Scheduler = ({ setMessage }) => {
     const newStartTime = new Date(`${date} ${startTime}`).toISOString();
     const newEndTime = new Date(`${date} ${endTime}`).toISOString();
     if (selectedParticipants.length < 2) {
-      setMessage("Please select atleast two participants");
+      setAlert({
+        type: "warning",
+        message: "Please select atleast two participants"
+      });
       return;
     }
     if(name.length == 0) {
-      setMessage("Name field can't be left empty");
+      setAlert({
+        type: "warning",
+        message: "Name field can't be left empty"
+      });
       return;
     }
     if (!oldInterview) {
       const conflicts = await checkForTimeConflicts(selectedParticipants);
       if(conflicts) {
-        setMessage("Some participants are unavailable at this time slot");
+        setAlert({
+          type: "warning",
+          message: "Some participants are unavailable at this time slot"
+        });
         return;
       }
       if (!startTime || !endTime) {
-        setMessage("Please Select time details");
+        setAlert({
+          type: "warning",
+          message: "Please Select time details"
+        });
         return;
       }
       if (startTime && endTime && startTime > endTime) {
-        setMessage("End time cannot be lower than start time");
+        setAlert({
+          type: "warning",
+          message: "End time cannot be lower than start time"
+        });
         return;
       }
       await scheduleInterview({
@@ -94,11 +109,17 @@ const Scheduler = ({ setMessage }) => {
         name,
         description
       });
-      setMessage('Interview Scheduled Successfully');
+      setAlert({
+        type: "success",
+        message: "Interview Scheduled Successfully"
+      });
     }
     else {
       if(await checkConflictsExceptOneMeeting(selectedParticipants, oldInterview._id)) {
-        setMessage("Some participants are unavailable at this time slot");
+        setAlert({
+          type: "warning",
+          message: "Some participants are unavailable at this time slot"
+        });
         return;
       }
       await updateInterview({
@@ -158,7 +179,7 @@ const Scheduler = ({ setMessage }) => {
             </Col>
           </Row>
           <Row>
-            <List participants={participants} selectedParticipants={selectedParticipants} setSelectedParticipants={setSelectedParticipants} date={date} startTime={startTime} endTime={endTime} setMessage={setMessage} />
+            <List participants={participants} selectedParticipants={selectedParticipants} setSelectedParticipants={setSelectedParticipants} />
           </Row>
         </Form>
       </Container>
